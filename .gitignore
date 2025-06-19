@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# VS Code / PyCharm
+.vscode/
+.idea/
+
+# Pytest cache
+.cache/
+.pytest_cache/
+
+# Mac OS system files
+.DS_Store
+
+# GitHub Actions / logs
+*.log
+
+# Bytecode
+*.pyc
+
+# Pip metadata
+pip-wheel-metadata/
+*.egg-info/
+
+# Test screenshots or output files
+screenshots/
+output/
