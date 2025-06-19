@@ -20,17 +20,26 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: Install Chrome
+    - name: Install Google Chrome
       run: |
         sudo apt update
         wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
         sudo apt install -y ./google-chrome-stable_current_amd64.deb
+        google-chrome --version
 
     - name: Install dependencies
       run: |
-        pip install --upgrade pip
+        python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run tests
+    - name: Start local web server
+      working-directory: ./dist
       run: |
-        pytest tests/
+        python3 -m http.server 8000 &
+        sleep 5  # подождём, чтобы сервер успел подняться
+
+    - name: Run tests
+      env:
+        CHROME_BIN: /usr/bin/google-chrome
+      run: |
+        pytest tests/ --tb=short --capture=tee-sys
