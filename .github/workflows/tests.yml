@@ -23,7 +23,8 @@ jobs:
     - name: Install Chrome
       run: |
         sudo apt update
-        sudo apt install -y google-chrome-stable
+        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        sudo apt install -y ./google-chrome-stable_current_amd64.deb
 
     - name: Install dependencies
       run: |
@@ -33,5 +34,3 @@ jobs:
     - name: Run tests
       run: |
         pytest tests/
-      env:
-        PATH: /usr/bin/google-chrome:$PATH
