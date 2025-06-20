@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 
+
 class FBankLocators:
     BALANCE = (By.ID, "rub-sum")
     RESERVED = (By.ID, "rub-reserved")
@@ -14,4 +15,7 @@ class FBankLocators:
     CURRENCY_LABEL = (By.XPATH, "//span[text()='₽' or text()='$' or text()='€']")
     COMMISSION = (By.ID, "comission")
     SUBMIT_BUTTON = (By.XPATH, "//button[.//span[text()='Перевести']]")
-    ERROR_MESSAGE = (By.XPATH, "//span[contains(text(), 'Недостаточно средств на счете')]")
+    ERROR_MESSAGE = (
+        By.XPATH,
+        "//span[contains(text(), 'Недостаточно средств на счете')]",
+    )

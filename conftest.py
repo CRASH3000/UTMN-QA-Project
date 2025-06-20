@@ -5,6 +5,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from pages.fbank_page import FBankPage
 
+
 @pytest.fixture
 def driver():
     options = Options()
@@ -19,6 +20,7 @@ def driver():
     yield driver
     driver.quit()
 
+
 @pytest.fixture
 def prepared_rub_transfer(driver):
     def _transfer(amount):
@@ -28,4 +30,5 @@ def prepared_rub_transfer(driver):
         page.enter_card_number("1111 1111 1111 1111")
         page.enter_transfer_amount(str(amount))
         return page
+
     return _transfer

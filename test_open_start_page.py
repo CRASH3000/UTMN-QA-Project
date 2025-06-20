@@ -5,6 +5,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+
 @pytest.fixture
 def driver():
     options = Options()
@@ -13,15 +14,22 @@ def driver():
     yield driver
     driver.quit()
 
+
 def test_open_start_page(driver):
     url = "http://localhost:8000/?balance=30000&reserved=20001"
     driver.get(url)
 
     # Простейшая проверка: страница открыта, заголовок или элемент есть
-    assert "http://localhost:8000" in driver.current_url, "Стартовая страница не открылась"
+    assert (
+        "http://localhost:8000" in driver.current_url
+    ), "Стартовая страница не открылась"
 
     # Можно добавить проверку контента на странице:
-    assert "balance" in driver.page_source.lower() or "reserved" in driver.page_source.lower()
+    assert (
+        "balance" in driver.page_source.lower()
+        or "reserved" in driver.page_source.lower()
+    )
+
 
 def test_balance_and_reserve_display(driver):
     balance = 10000
@@ -45,6 +53,10 @@ def test_balance_and_reserve_display(driver):
     reserve_value = int(reserve_text)
 
     # Проверки
-    assert balance_value == balance, f"Ожидался баланс {balance}, но на странице {balance_value}"
-    assert reserve_value == reserved, f"Ожидался резерв {reserved}, но на странице {reserve_value}"
+    assert (
+        balance_value == balance
+    ), f"Ожидался баланс {balance}, но на странице {balance_value}"
+    assert (
+        reserve_value == reserved
+    ), f"Ожидался резерв {reserved}, но на странице {reserve_value}"
     assert reserve_value <= balance_value, "Резерв не должен превышать счёт"

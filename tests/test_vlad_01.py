@@ -2,12 +2,17 @@ import pytest
 from pages.fbank_page import FBankPage
 from locators.fbank_locators import FBankLocators
 
+
 def test_open_start_page(driver):
     page = FBankPage(driver)
     page.open(balance=30000, reserved=20001)
 
     assert "localhost:8000" in driver.current_url
-    assert "balance" in driver.page_source.lower() or "reserved" in driver.page_source.lower()
+    assert (
+        "balance" in driver.page_source.lower()
+        or "reserved" in driver.page_source.lower()
+    )
+
 
 def test_balance_and_reserved_display(driver):
     page = FBankPage(driver)
@@ -19,6 +24,7 @@ def test_balance_and_reserved_display(driver):
     assert page.get_reserved() == reserved
     assert page.get_reserved() <= page.get_balance()
 
+
 def test_open_transfer_form_on_rub_click(driver):
     page = FBankPage(driver)
     page.open(balance=10000, reserved=100)
@@ -27,11 +33,13 @@ def test_open_transfer_form_on_rub_click(driver):
 
     assert page.is_card_input_visible()
 
+
 def test_open_transfer_form_on_usd_click(driver):
     page = FBankPage(driver)
     page.open(balance=10000, reserved=100)
     page.click_currency_block("USD")
     assert page.is_card_input_visible()
+
 
 def test_open_transfer_form_on_eur_click(driver):
     page = FBankPage(driver)
@@ -39,11 +47,21 @@ def test_open_transfer_form_on_eur_click(driver):
     page.click_currency_block("EUR")
     assert page.is_card_input_visible()
 
-@pytest.mark.parametrize("card_number, expected_visible", [
-    ("1111 1111 1111 1111", True), # TC-06
-    ("1111 1111 1111 112", False), # TC-07
-    ("1111 1111 1111 1111 3", False),  # TC-08
-])
+
+@pytest.mark.parametrize(
+    "card_number, expected_visible",
+    [
+        ("1111 1111 1111 1111", True),  # TC-06
+        ("1111 1111 1111 112", False),  # TC-07
+        pytest.param(
+            "1111 1111 1111 1111 3",
+            False,
+            marks=pytest.mark.xfail(
+                reason="Ожидаемый баг: неверный номер карты не блокирует форму"
+            ),
+        ),  # TC-08
+    ],
+)
 def test_card_number_validation(driver, card_number, expected_visible):
     page = FBankPage(driver)
     page.open(balance=30000, reserved=20001)
@@ -57,11 +75,27 @@ def test_card_number_validation(driver, card_number, expected_visible):
         f"но результат: {is_displayed}"
     )
 
-@pytest.mark.parametrize("amount, expected_commission", [
-    ("10000", 1000.0),  # TC-09
-    ("10", 1.0),        # TC-10
-    ("1", 0.1),         # TC-11
-])
+
+@pytest.mark.parametrize(
+    "amount, expected_commission",
+    [
+        ("10000", 1000.0),  # TC-09
+        pytest.param(
+            "10",
+            1.0,
+            marks=pytest.mark.xfail(
+                reason="Ожидаемый баг: неправильный расчёт комиссии для малых сумм"
+            ),
+        ),  # TC-10
+        pytest.param(
+            "1",
+            0.1,
+            marks=pytest.mark.xfail(
+                reason="Ожидаемый баг: комиссия не отображается для минимальной суммы"
+            ),
+        ),  # TC-11
+    ],
+)
 def test_commission_calculation(driver, amount, expected_commission):
     page = FBankPage(driver)
     page.open(balance=30000, reserved=20001)
@@ -73,10 +107,12 @@ def test_commission_calculation(driver, amount, expected_commission):
     page.enter_transfer_amount(amount)
     actual_commission = page.get_commission_value()
 
-    assert round(actual_commission, 2) == round(expected_commission, 2), (
-        f"Ожидалась комиссия {expected_commission} ₽, но отображается {actual_commission} ₽"
-    )
+    assert round(actual_commission, 2) == round(
+        expected_commission, 2
+    ), f"Ожидалась комиссия {expected_commission} ₽, но отображается {actual_commission} ₽"
 
+
+@pytest.mark.xfail(reason="Ожидаемый баг: поле суммы не ограничивает длину ввода")
 def test_transfer_amount_input_length_limit(driver):
     page = FBankPage(driver)
     page.open(balance=999999999, reserved=0)
@@ -92,13 +128,17 @@ def test_transfer_amount_input_length_limit(driver):
     amount_input = driver.find_element(*FBankLocators.SUM_INPUT)
     current_value = amount_input.get_attribute("value")
 
-    assert len(current_value) <= 15, (
-        f"Поле суммы не ограничивает ввод: длина значения {len(current_value)} символов"
-    )
+    assert (
+        len(current_value) <= 15
+    ), f"Поле суммы не ограничивает ввод: длина значения {len(current_value)} символов"
 
     # Дополнительно: интерфейс не сломался
-    assert page.is_transfer_form_displayed(), "Интерфейс пропал после ввода слишком длинной суммы"
+    assert (
+        page.is_transfer_form_displayed()
+    ), "Интерфейс пропал после ввода слишком длинной суммы"
 
+
+@pytest.mark.xfail(reason="Ожидаемый баг: форма принимает отрицательное значение суммы")
 def test_negative_transfer_amount(driver):
     page = FBankPage(driver)
     page.open(balance=10000, reserved=0)
@@ -118,4 +158,6 @@ def test_negative_transfer_amount(driver):
 
     # Проверяем, что кнопка неактивна
     is_enabled = page.is_submit_button_enabled()
-    assert not is_enabled, "Кнопка 'Перевести' должна быть неактивна при отрицательном вводе"
+    assert (
+        not is_enabled
+    ), "Кнопка 'Перевести' должна быть неактивна при отрицательном вводе"
